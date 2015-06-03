@@ -97,7 +97,7 @@ module Sprockets
         (type == "application/css-sourcemap+json" && file_type != "application/css-sourcemap+json")
       [SourceMapProcessor]
     else
-      env.default_processors_for(type, file_type)
+      [SourceMapCommentProcessor] + env.default_processors_for(type, file_type)
     end
   end
 

@@ -2,6 +2,8 @@ require 'sprockets/autoload'
 require 'sprockets/digest_utils'
 require 'sprockets/source_map_utils'
 
+require 'pry'
+
 module Sprockets
   # Public: Uglifier/Uglify compressor.
   #
@@ -52,10 +54,15 @@ module Sprockets
     def call(input)
       js, map = @uglifier.compile_with_map(input[:data])
 
+      binding.pry
+
       map = SourceMapUtils.combine_source_maps(
         input[:metadata][:map],
         SourceMapUtils.decode_json_source_map(map)["mappings"]
       )
+
+
+      comment = "\n//# sourceMappingURL=%s.js.map" % input[:name]
 
       { data: js, map: map }
     end

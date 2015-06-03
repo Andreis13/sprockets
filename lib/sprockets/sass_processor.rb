@@ -70,9 +70,11 @@ module Sprockets
 
       engine = Autoload::Sass::Engine.new(input[:data], options)
 
-      css = Utils.module_include(Autoload::Sass::Script::Functions, @functions) do
-        engine.render
+      css, map = Utils.module_include(Autoload::Sass::Script::Functions, @functions) do
+        engine.render_with_sourcemap(input[:uri])
       end
+
+      binding.pry
 
       # Track all imported files
       sass_dependencies = Set.new([input[:filename]])
@@ -81,7 +83,12 @@ module Sprockets
         context.metadata[:dependencies] << URIUtils.build_file_digest_uri(dependency.options[:filename])
       end
 
-      context.metadata.merge(data: css, sass_dependencies: sass_dependencies)
+      map = SourceMapUtils.combine_source_maps(
+        input[:metadata][:map],
+        SourceMapUtils.decode_json_source_map(map.to_json)["mappings"]
+      )
+
+      context.metadata.merge(data: css, sass_dependencies: sass_dependencies, map: map)
     end
 
     # Public: Functions injected into Sass context during Sprockets evaluation.
